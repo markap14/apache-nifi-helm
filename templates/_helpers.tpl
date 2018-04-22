@@ -30,3 +30,16 @@ Create chart name and version as used by the chart label.
 {{- define "apache-nifi.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Form the Zookeeper URL. If zookeeper is installed as part of this chart, use k8s service discovery,
+else use user-provided URL
+*/}}
+{{- define "zookeeper.url" }}
+{{- $port := .Values.zookeeper.port | toString }}
+{{- if .Values.zookeeper.enabled -}}
+{{- printf "%s-zookeeper:%s" .Release.Name $port }}
+{{- else -}}
+{{- printf "%s:%s" .Values.zookeeper.url $port }}
+{{- end -}}
+{{- end -}}

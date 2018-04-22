@@ -1,17 +1,23 @@
 # Default values for apache-nifi.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
-replicaCount: 1
+version: 1.6.0
+replicaCount: 2
 
 image:
-  repository: nginx
-  tag: stable
+  repository: apache-nifi-k8s
   pullPolicy: IfNotPresent
+
+truststorePass: passwordgoeshere
+keystorePass: passwordgoeshere
 
 service:
   type: ClusterIP
-  port: 80
+
+properties:
+  isNode: true
+  httpPort: 8080
+  clusterPort: 8443
 
 ingress:
   enabled: false
@@ -25,6 +31,23 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+jvmMemory: 128m
+
+probe:
+  initialDelaySeconds: 30
+  timeoutSeconds: 15
+
+sidecar:
+  image: busybox
+
+storageClass: standard
+
+dataStorage: 1Gi
+flowfileRepoStorage: 1Gi
+contentRepoStorage: 1Gi
+provenanceRepoStorage: 1Gi
+logStorage: 1Gi
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -43,3 +66,35 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# ------------------------------------------------------------------------------
+# Zookeeper:
+# ------------------------------------------------------------------------------
+zookeeper:
+  ## If true, install the Zookeeper chart alongside Kafka
+  ## ref: https://github.com/kubernetes/charts/tree/master/incubator/zookeeper
+  enabled: true
+
+  ## Configure Zookeeper resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  resources:
+    limits:
+      memory: "256Mi"
+    requests:
+      memory: "128Mi"
+
+  antiAffinity: "soft"
+
+  ## The JVM heap size to allocate to Zookeeper
+  heap: "128m"
+
+  ## The amount of PV storage allocated to each Zookeeper pod in the statefulset
+  storage: "2Gi"
+
+  ## Specify a Zookeeper imagePullPolicy
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  #imagePullPolicy: "IfNotPresent"
+
+  ## If the Zookeeper Chart is disabled a URL and port are required to connect
+  url: ""
+  port: 2181
