@@ -40,7 +40,7 @@ RUN groupadd -g ${GID} nifi || groupmod -n nifi `getent group ${GID} | cut -d: -
     && apt-get update \
     && apt-get install -y jq xmlstarlet
 
-USER nifi
+#USER nifi
 
 # Download, validate, and expand Apache NiFi binary and Nifi tools binary.
 RUN curl -fSL ${MIRROR}/${NIFI_BINARY_URL} -o ${NIFI_BASE_DIR}/nifi-${NIFI_VERSION}-bin.tar.gz \
@@ -57,6 +57,8 @@ RUN curl -fSL ${MIRROR}/${NIFI_BINARY_URL} -o ${NIFI_BASE_DIR}/nifi-${NIFI_VERSI
 EXPOSE 8080 8443 10000
 
 COPY ./files/nifi-env.sh $NIFI_HOME/bin/nifi-env.sh
+RUN chown nifi:nifi $NIFI_HOME/bin/nifi-env.sh
+
 COPY ./files/docker-entrypoint.sh /
 
 WORKDIR ${NIFI_HOME}
