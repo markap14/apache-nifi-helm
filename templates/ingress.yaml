@@ -11,5 +11,5 @@ metadata:
 spec:
     backend:
         serviceName: {{ template "apache-nifi.fullname" . }}-headless
-        servicePort: {{ .Values.httpPort }}
+        servicePort: {{ .Values.properties.httpPort }}
 {{- end -}}
