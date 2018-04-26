@@ -1,0 +1,218 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ template "apache-nifi.fullname" . }}
+  labels:
+    app: {{ include "apache-nifi.name" . | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  serviceName: {{ template "apache-nifi.fullname" . }}-headless
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "apache-nifi.name" . | quote }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    spec:
+{{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- end }}
+{{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+      containers:
+      - name: {{ template "apache-nifi.name" . }}-server
+        imagePullPollicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.image.repository }}:{{ .Values.version }}"
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+        - containerPort: {{ .Values.httpPort }}
+          name: http
+          protocol: TCP
+        - containerPort: {{ .Values.clusterPort }}
+          name: cluster
+          protocol: TCP
+        env:
+        - name: NIFI_ZOOKEEPER_CONNECT_STRING
+          value: {{ template "zookeeper.url" . }}
+        - name: TRUSTSTORE_PASS
+          value: {{ .Values.truststorePass }}
+        - name: KEYSTORE_PASS
+          value: {{ .Values.keystorePass }}
+        - name: HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+          - name: "data"
+            mountPath: /opt/nifi/data
+          - name: "flowfile-repository"
+            mountPath: /opt/nifi/flowfile_repository
+          - name: "content-repository"
+            mountPath: /opt/nifi/content_repository
+          - name: "provenance-repository"
+            mountPath: /opt/nifi/provenance_repository
+          - name: "logs"
+            mountPath: /opt/nifi/logs
+          - name: "bootstrap-conf"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/bootstrap.conf
+            subPath: "bootstrap.conf"
+          - name: "nifi-properties"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/nifi.temp
+            subPath: "nifi.temp"
+          - name: "authorizers-xml"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/authorizers.xml
+            subPath: "authorizers.xml"
+          - name: "bootstrap-notification-services-xml"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/bootstrap-notification-services.xml
+            subPath: "bootstrap-notification-services.xml"
+          - name: "logback-xml"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/logback.xml
+            subPath: "logback.xml"
+          - name: "login-identity-providers-xml"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/login-identity-providers.xml
+            subPath: "login-identity-providers.xml"
+          - name: "state-management-xml"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/state-management.xml
+            subPath: "state-management.xml"
+          - name: "zookeeper-properties"
+            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/zookeeper.properties
+            subPath: "zookeeper.properties"
+          #- name: "truststore-jks"
+          #  mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/truststore.jks
+          #  subPath: "truststore.jks"
+      - name: nifi-app-log-sidecar
+        image: {{ .Values.sidecarImage }}
+        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-app.log']
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      - name: nifi-bootstrap-log-sidecar
+        image: {{ .Values.sidecarImage }}
+        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-bootstrap.log']
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      - name: nifi-user-log-sidecar
+        image: {{ .Values.sidecarImage }}
+        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-user.log']
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+      volumes:
+      - name: "bootstrap-conf"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "bootstrap.conf"
+              path: "bootstrap.conf"
+      - name: "nifi-properties"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "nifi.properties"
+              path: "nifi.temp"
+      - name: "authorizers-xml"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "authorizers.xml"
+              path: "authorizers.xml"
+      - name: "bootstrap-notification-services-xml"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "bootstrap-notification-services.xml"
+              path: "bootstrap-notification-services.xml"
+      - name: "logback-xml"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "logback.xml"
+              path: "logback.xml"
+      - name: "login-identity-providers-xml"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "login-identity-providers.xml"
+              path: "login-identity-providers.xml"
+      - name: "state-management-xml"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "state-management.xml"
+              path: "state-management.xml"
+      - name: "zookeeper-properties"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "zookeeper.properties"
+              path: "zookeeper.properties"
+      #- name: "truststore-jks"
+      #  configMap:
+      #    name: {{ template "apache-nifi.fullname" . }}-config
+      #    items:
+      #      - key: "truststore.jks"
+      #        path: "truststore.jks
+  volumeClaimTemplates:
+    - metadata:
+      name: "data"
+      creationTimestamp: null
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.dataStorage }}
+    - metadata:
+      name: "flowfile-repository"
+      creationTimestamp: null
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.flowfileRepoStorage }}
+    - metadata:
+      name: "content-repository"
+      creationTimestamp: null
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.contentRepoStorage }}
+    - metadata:
+      name: "provenance-repository"
+      creationTimestamp: null
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.provenanceRepoStorage }}
+    - metadata:
+      name: "logs"
+      creationTimestamp: null
+      annotations:
+        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.logsStorage }}
