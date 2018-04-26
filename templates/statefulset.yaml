@@ -32,8 +32,8 @@ spec:
 {{- end }}
       containers:
       - name: {{ template "apache-nifi.name" . }}-server
-        imagePullPollicy: {{ .Values.image.pullPolicy | quote }}
-        image: "{{ .Values.image.repository }}:{{ .Values.version }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
@@ -66,31 +66,31 @@ spec:
           - name: "logs"
             mountPath: /opt/nifi/logs
           - name: "bootstrap-conf"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/bootstrap.conf
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap.conf
             subPath: "bootstrap.conf"
           - name: "nifi-properties"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/nifi.temp
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/nifi.temp
             subPath: "nifi.temp"
           - name: "authorizers-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/authorizers.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.xml
             subPath: "authorizers.xml"
           - name: "bootstrap-notification-services-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/bootstrap-notification-services.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap-notification-services.xml
             subPath: "bootstrap-notification-services.xml"
           - name: "logback-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/logback.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/logback.xml
             subPath: "logback.xml"
           - name: "login-identity-providers-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/login-identity-providers.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/login-identity-providers.xml
             subPath: "login-identity-providers.xml"
           - name: "state-management-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/state-management.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/state-management.xml
             subPath: "state-management.xml"
           - name: "zookeeper-properties"
-            mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/zookeeper.properties
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/zookeeper.properties
             subPath: "zookeeper.properties"
           #- name: "truststore-jks"
-          #  mountPath: /opt/nifi/nifi-{{ .Values.version }}/conf/truststore.jks
+          #  mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/truststore.jks
           #  subPath: "truststore.jks"
       - name: nifi-app-log-sidecar
         image: {{ .Values.sidecarImage }}
@@ -167,52 +167,52 @@ spec:
       #        path: "truststore.jks
   volumeClaimTemplates:
     - metadata:
-      name: "data"
-      creationTimestamp: null
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+        name: "data"
+      #annotations:
+      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
             storage: {{ .Values.dataStorage }}
     - metadata:
-      name: "flowfile-repository"
-      creationTimestamp: null
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+        name: "flowfile-repository"
+      #annotations:
+      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
             storage: {{ .Values.flowfileRepoStorage }}
     - metadata:
-      name: "content-repository"
-      creationTimestamp: null
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+        name: "content-repository"
+      #annotations:
+      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
             storage: {{ .Values.contentRepoStorage }}
     - metadata:
-      name: "provenance-repository"
-      creationTimestamp: null
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+        name: "provenance-repository"
+      #annotations:
+      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
             storage: {{ .Values.provenanceRepoStorage }}
     - metadata:
-      name: "logs"
-      creationTimestamp: null
-      annotations:
-        volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
+        name: "logs"
+      #annotations:
+      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
             storage: {{ .Values.logsStorage }}
