@@ -31,16 +31,18 @@ ENV NIFI_HOME=${NIFI_BASE_DIR}/nifi-${NIFI_VERSION} \
     NIFI_BINARY_URL=/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz \
     NIFI_TOOLKIT_URL=/nifi/${NIFI_VERSION}/nifi-toolkit-${NIFI_VERSION}-bin.tar.gz
 
-
 # Setup NiFi user
 RUN groupadd -g ${GID} nifi || groupmod -n nifi `getent group ${GID} | cut -d: -f1` \
     && useradd --shell /bin/bash -u ${UID} -g ${GID} -m nifi \
     && mkdir -p ${NIFI_HOME}/conf/templates \
-    && chown -R nifi:nifi ${NIFI_BASE_DIR} \
+    && mkdir -p $NIFI_BASE_DIR/data \
+    && mkdir -p $NIFI_BASE_DIR/flowfile_repository \
+    && mkdir -p $NIFI_BASE_DIR/content_repository \
+    && mkdir -p $NIFI_BASE_DIR/provenance_repository \
+    && mkdir -p $NIFI_BASE_DIR/logs \
+    && chown -R nifi:nifi ${NIFI_BASE_DIR} \ 
     && apt-get update \
-    && apt-get install -y jq xmlstarlet
-
-#USER nifi
+    && apt-get install -y jq xmlstarlet procps
 
 # Download, validate, and expand Apache NiFi binary and Nifi tools binary.
 RUN curl -fSL ${MIRROR}/${NIFI_BINARY_URL} -o ${NIFI_BASE_DIR}/nifi-${NIFI_VERSION}-bin.tar.gz \
@@ -57,11 +59,11 @@ RUN curl -fSL ${MIRROR}/${NIFI_BINARY_URL} -o ${NIFI_BASE_DIR}/nifi-${NIFI_VERSI
 EXPOSE 8080 8443 10000
 
 COPY ./files/nifi-env.sh $NIFI_HOME/bin/nifi-env.sh
-RUN chown nifi:nifi $NIFI_HOME/bin/nifi-env.sh
 
 COPY ./files/docker-entrypoint.sh /
+RUN chmod 700 /docker-entrypoint.sh
 
-WORKDIR ${NIFI_HOME}
+WORKDIR $NIFI_HOME
 
 # Apply configuration and start NiFi
 ENTRYPOINT      ["/docker-entrypoint.sh"]
