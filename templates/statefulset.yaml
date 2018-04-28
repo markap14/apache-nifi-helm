@@ -37,10 +37,10 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
-        - containerPort: {{ .Values.httpPort }}
+        - containerPort: {{ .Values.properties.httpPort }}
           name: http
           protocol: TCP
-        - containerPort: {{ .Values.clusterPort }}
+        - containerPort: {{ .Values.properties.clusterPort }}
           name: cluster
           protocol: TCP
         env:
@@ -54,6 +54,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: HEADLESS
+          value: {{ template "apache-nifi.fullname" . }}-headless
         volumeMounts:
           - name: "data"
             mountPath: /opt/nifi/data
@@ -89,23 +91,20 @@ spec:
           - name: "zookeeper-properties"
             mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/zookeeper.properties
             subPath: "zookeeper.properties"
-          #- name: "truststore-jks"
-          #  mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/truststore.jks
-          #  subPath: "truststore.jks"
       - name: nifi-app-log-sidecar
-        image: {{ .Values.sidecarImage }}
+        image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-app.log']
         volumeMounts:
         - name: logs
           mountPath: /var/log
       - name: nifi-bootstrap-log-sidecar
-        image: {{ .Values.sidecarImage }}
+        image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-bootstrap.log']
         volumeMounts:
         - name: logs
           mountPath: /var/log
       - name: nifi-user-log-sidecar
-        image: {{ .Values.sidecarImage }}
+        image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-user.log']
         volumeMounts:
         - name: logs
@@ -159,17 +158,9 @@ spec:
           items:
             - key: "zookeeper.properties"
               path: "zookeeper.properties"
-      #- name: "truststore-jks"
-      #  configMap:
-      #    name: {{ template "apache-nifi.fullname" . }}-config
-      #    items:
-      #      - key: "truststore.jks"
-      #        path: "truststore.jks
   volumeClaimTemplates:
     - metadata:
         name: "data"
-      #annotations:
-      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: {{ .Values.storageClass | quote }}
@@ -178,8 +169,6 @@ spec:
             storage: {{ .Values.dataStorage }}
     - metadata:
         name: "flowfile-repository"
-      #annotations:
-      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: {{ .Values.storageClass | quote }}
@@ -188,8 +177,6 @@ spec:
             storage: {{ .Values.flowfileRepoStorage }}
     - metadata:
         name: "content-repository"
-      #annotations:
-      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: {{ .Values.storageClass | quote }}
@@ -198,8 +185,6 @@ spec:
             storage: {{ .Values.contentRepoStorage }}
     - metadata:
         name: "provenance-repository"
-      #annotations:
-      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: {{ .Values.storageClass | quote }}
@@ -208,11 +193,9 @@ spec:
             storage: {{ .Values.provenanceRepoStorage }}
     - metadata:
         name: "logs"
-      #annotations:
-      #  volume.beta.kubernetes.io/storage-class: {{ .Values.storageClass | quote }}
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: {{ .Values.storageClass | quote }}
         resources:
           requests:
-            storage: {{ .Values.logsStorage }}
+            storage: {{ .Values.logStorage }}

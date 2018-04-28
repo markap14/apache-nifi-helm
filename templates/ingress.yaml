@@ -2,14 +2,18 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-    name: {{ template "apache-nifi.fullname" . }}-ingress
-    labels:
-        app: {{ include "apache-nifi.name" . | quote }}
-        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-        release: {{ .Release.Name | quote }}
-        heritage: {{ .Release.Service | quote }}
+  name: {{ template "apache-nifi.fullname" . }}-ingress
+  labels:
+    app: {{ include "apache-nifi.name" . | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
 spec:
-    backend:
-        serviceName: {{ template "apache-nifi.fullname" . }}-headless
-        servicePort: {{ .Values.properties.httpPort }}
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "apache-nifi.fullname" . }}-headless
+          servicePort: {{ .Values.properties.httpPort }}
 {{- end -}}

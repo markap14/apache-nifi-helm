@@ -13,7 +13,7 @@ truststorePass: passwordgoeshere
 keystorePass: passwordgoeshere
 
 service:
-  type: ClusterIP
+  type: NodePort
 
 properties:
   isNode: true
