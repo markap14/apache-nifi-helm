@@ -16,11 +16,6 @@
 #    limitations under the License.
 #
 
-# The java implementation to use.
-#export JAVA_HOME=/usr/java/jdk1.8.0/
-
-#export NIFI_HOME=$(cd "${SCRIPT_DIR}" && cd .. && pwd)
-
 #The directory for the NiFi pid file
 export NIFI_PID_DIR="${NIFI_HOME}/run"
 

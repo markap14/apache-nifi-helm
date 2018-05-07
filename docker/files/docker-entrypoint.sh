@@ -25,4 +25,4 @@ chown nifi:nifi /opt/nifi/flowfile_repository
 chown nifi:nifi /opt/nifi/content_repository
 chown nifi:nifi /opt/nifi/logs
 
-su nifi "$@"
+sh "$@"
