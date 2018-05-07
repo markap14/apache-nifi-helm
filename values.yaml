@@ -20,9 +20,12 @@ properties:
   isNode: true
   httpPort: 8080
   clusterPort: 6007
-  provenanceStorage: "40 GB"
+  provenanceStorage: "8 GB"
+  siteToSite:
+    secure: false
+    port: 10000
 
-loadbalancer:
+loadBalancer:
   enabled: true
 
 ingress:
@@ -38,21 +41,48 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# Amount of memory to give the NiFi java heap
 jvmMemory: 2g
 
 probe:
   initialDelaySeconds: 30
   timeoutSeconds: 15
 
+# busybox image is used to tail nifi logs. This allows us to setup a container
+# for tailing nifi-app log, nifi-user log, and nifi-bootstrap log. This makes it more
+# convenient to view the different logs.
 sidecar:
   image: busybox
 
-storageClass: standard
 
+## Persistent Storage
+# When creating persistent storage, the NiFi helm chart can either reference an already-defined
+# storage class by name, such as "standard" or can define a custom storage class by specifying
+# the storage class name as "nifi-storage-class" and providing the "storageProvisioner" and "storageType".
+# For example, to use SSD storage on Google Compute Engine, we would use the following settings:
+# storageClass: nifi-storage-class
+# storageProvisioner: kubernetes.io/gce-pd
+# storageType: pd-ssd
+#
+# To use a storage class that already exists on the Kubernetes cluster, we can simply reference it by name.
+# For example:
+# storageClass: standard
+#
+# storageClass: standard
+#storageClass: nifi-storage-class
+#storageProvisioner: kubernetes.io/gce-pd
+#storageType: pd-ssd
+
+## Storage Capacities for persistent volumes
+# Storage capacity for the 'data' directory, which is used to hold things such as the flow.xml.gz, configuration, state, etc.
 dataStorage: 1Gi
+# Storage capacity for the FlowFile repository
 flowfileRepoStorage: 10Gi
+# Storage capacity for the Content repository
 contentRepoStorage: 10Gi
-provenanceRepoStorage: 50Gi
+# Storage capacity for the Provenance repository. When changing this, one should also change the properties.provenanceStorage value above, also.
+provenanceRepoStorage: 10Gi
+# Storage capacity for nifi logs
 logStorage: 5Gi
 
 resources: {}
@@ -80,6 +110,8 @@ zookeeper:
   ## If true, install the Zookeeper chart
   ## ref: https://github.com/kubernetes/charts/tree/master/incubator/zookeeper
   enabled: true
+
+  # Number of ZooKeeper replicas
   servers: 1
 
   ## Configure Zookeeper resource requests and limits
