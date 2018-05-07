@@ -1,0 +1,19 @@
+{{- if .Values.loadbalancer.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "apache-nifi.fullname" . }}-load-balancer
+  labels:
+    app: {{ include "apache-nifi.name" . | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  type: "LoadBalancer"
+  ports:
+    - port: {{ .Values.properties.httpPort }}
+      name: http
+  selector:
+    app: {{ template "apache-nifi.name" . }}
+    release: {{ .Release.Name }}
+{{- end -}}

@@ -1,12 +1,13 @@
 # Default values for apache-nifi.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-#version: "1.6.0"
+
+# Number of nifi nodes
 replicaCount: 2
 
 image:
-  repository: apache/apache-nifi-k8s
-  pullPolicy: IfNotPresent
+  repository: markap14/nifi-node
+  pullPolicy: Always
   tag: "1.6.0"
 
 truststorePass: passwordgoeshere
@@ -18,10 +19,14 @@ service:
 properties:
   isNode: true
   httpPort: 8080
-  clusterPort: 8443
+  clusterPort: 6007
+  provenanceStorage: "40 GB"
+
+loadbalancer:
+  enabled: true
 
 ingress:
-  enabled: true
+  enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -33,7 +38,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-jvmMemory: 128m
+jvmMemory: 2g
 
 probe:
   initialDelaySeconds: 30
@@ -45,10 +50,10 @@ sidecar:
 storageClass: standard
 
 dataStorage: 1Gi
-flowfileRepoStorage: 1Gi
-contentRepoStorage: 1Gi
-provenanceRepoStorage: 1Gi
-logStorage: 1Gi
+flowfileRepoStorage: 10Gi
+contentRepoStorage: 10Gi
+provenanceRepoStorage: 50Gi
+logStorage: 5Gi
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -72,9 +77,10 @@ affinity: {}
 # Zookeeper:
 # ------------------------------------------------------------------------------
 zookeeper:
-  ## If true, install the Zookeeper chart alongside Kafka
+  ## If true, install the Zookeeper chart
   ## ref: https://github.com/kubernetes/charts/tree/master/incubator/zookeeper
   enabled: true
+  servers: 1
 
   ## Configure Zookeeper resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
