@@ -13,6 +13,7 @@ create_keystore() {
 patch_nifi_properties()  {
     cat "${NIFI_HOME}/conf/nifi.temp" > "${NIFI_HOME}/conf/nifi.properties"
     echo "nifi.web.http.host=${HOST}.${HEADLESS}" >> "${NIFI_HOME}/conf/nifi.properties"
+    echo "nifi.web.https.host=${HOST}.${HEADLESS}" >> "${NIFI_HOME}/conf/nifi.properties"
     echo "nifi.remote.input.host=${HOST}.${HEADLESS}" >> "${NIFI_HOME}/conf/nifi.properties"
     echo "nifi.cluster.node.address=${HOST}.${HEADLESS}" >> "${NIFI_HOME}/conf/nifi.properties"
     echo "nifi.zookeeper.connect.string=${NIFI_ZOOKEEPER_CONNECT_STRING}" >> "${NIFI_HOME}/conf/nifi.properties"

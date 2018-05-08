@@ -21,3 +21,8 @@ export NIFI_PID_DIR="${NIFI_HOME}/run"
 
 #The directory for NiFi log files
 export NIFI_LOG_DIR="${NIFI_BASE_DIR}/logs" #changed this location to the base directory vs nifi home
+
+# Do not allow keytabs to be explicitly listed as processor properties. Instead, enforce that the properties
+# be configured by using a KerberosCredentialsService / KeytabCredentialsService. This is a much more secure
+# posture in a multi-tenant environment.
+export NIFI_ALLOW_EXPLICIT_KEYTAB=false

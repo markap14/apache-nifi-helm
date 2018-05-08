@@ -55,6 +55,15 @@ RUN curl -fSL ${MIRROR}/${NIFI_BINARY_URL} -o ${NIFI_BASE_DIR}/nifi-${NIFI_VERSI
     && rm ${NIFI_BASE_DIR}/nifi-toolkit-${NIFI_VERSION}-bin.tar.gz \
     && chown -R nifi:nifi ${NIFI_HOME}
 
+# Establish best practices for running NiFi
+RUN echo "*  hard  nofile  50000" >> /etc/security/limits.conf \
+    && echo "*  soft  nofile  50000" >> /etc/security/limits.conf \
+    && echo "*  hard  nproc  10000" >> /etc/security/limits.conf \
+    && echo "*  soft  nproc  10000" >> /etc/security/limits.conf \
+    && echo "vm.swappiness = 0" >> /etc/sysctl.conf \
+    && sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait="1" \
+    && sysctl -w net.ipv4.ip_local_port_range="10000 65000"
+
 # Web HTTP(s) & Socket Site-to-Site Ports
 EXPOSE 8080 8443 10000
 
