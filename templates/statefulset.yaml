@@ -12,6 +12,8 @@ spec:
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
+      annotations:
+        security.alpha.kubernetes.io/sysctls: net.ipv4.ip_local_port_range=10000 65000
       labels:
         app: {{ include "apache-nifi.name" . | quote }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -30,6 +32,9 @@ spec:
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
 {{- end }}
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
       - name: {{ template "apache-nifi.name" . }}-server
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
@@ -94,18 +99,24 @@ spec:
       - name: nifi-app-log-sidecar
         image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-app.log']
+        resources:
+{{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:
         - name: logs
           mountPath: /var/log
       - name: nifi-bootstrap-log-sidecar
         image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-bootstrap.log']
+        resources:
+{{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:
         - name: logs
           mountPath: /var/log
       - name: nifi-user-log-sidecar
         image: {{ .Values.sidecar.image }}
         args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-user.log']
+        resources:
+{{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:
         - name: logs
           mountPath: /var/log

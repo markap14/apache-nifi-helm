@@ -11,8 +11,9 @@ metadata:
 spec:
   type: "LoadBalancer"
   ports:
-    - port: {{ .Values.properties.httpPort }}
+    - port: {{ .Values.loadBalancer.httpPort }}
       name: http
+      targetPort: {{ .Values.properties.httpPort }}
   selector:
     app: {{ template "apache-nifi.name" . }}
     release: {{ .Release.Name }}

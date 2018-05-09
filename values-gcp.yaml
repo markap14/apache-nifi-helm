@@ -1,0 +1,3 @@
+storageClass: nifi-storage-class
+storageProvisioner: kubernetes.io/gce-pd
+storageType: pd-ssd
