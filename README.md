@@ -13,8 +13,21 @@ helm init --service-account tiller
 # Update dependencies
 helm dep up
 
-# Use values-mini.yaml when on Minikube
-helm upgrade --install nifi . -f values-minikube.yaml
+# The name and namespace to use for the release is configurable
+export RELEASE_NAME=nifi
+export RELEASE_NAMESPACE=default
+
+export CHART_PATH=.
+
+# Minikube default unsecured install with one node
+helm upgrade --install $RELEASE_NAME $CHART_PATH -f values-minikube.yaml -f values-unsecure.yaml --set replicaCount=1 --namespace $RELEASE_NAMESPACE
+```
+
+### Decommission
+Helm does not delete the PVCs created, so they have to be removed manually, after deleting the chart
+```
+helm delete $RELEASE_NAME --purge
+kubectl delete pvc -l release=$RELEASE_NAME
 ```
 
 ## Minikube setup instructions and tips
@@ -42,7 +55,7 @@ minikube dashboard
 
 ### Access NiFi cluster through the LoadBalancer
 ```
-minikube service nifi-apache-nifi-load-balancer
+minikube service $RELEASE_NAME-apache-nifi-load-balancer
 ```
 
 ### Switch to the docker environment running in the VM
@@ -56,12 +69,14 @@ After that it is possible to use a locally built image instead of the default on
 docker build -t myrepo/nifi-node:myversion docker/
 
 # and use it in minikube
-helm upgrade --install nifi . -f values-minikube.yaml --set image.repository=myrepo/nifi-node:myversion --set image.pullPolicy=IfNotPresent
+helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMESPACE
+ --set image.repository=myrepo --set image.tag=mytag --set image.pullPolicy=IfNotPresent
 ```
 
 ## Todo items
 
 * TLS setup for secure node communication
+* Ingress (with public TLS)
 * Explicit command to run containers (NiFi)
 * Liveness/readiness checks (cluster state)
 * StatefulSet fine tuning
@@ -70,7 +85,7 @@ helm upgrade --install nifi . -f values-minikube.yaml --set image.repository=myr
   - default antiaffinity
 * Set default resource request and limit
 * Log rotation
-* GKE ingress with TLS
 * Not all sysctl parameters are allowed to be configured currently:
   - vm.swappiness
   - net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait
+
