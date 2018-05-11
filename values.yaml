@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 # Number of nifi nodes
-replicaCount: 1
+replicaCount: 2
 
 image:
   repository: markap14/nifi-node
@@ -12,6 +12,10 @@ image:
 
 truststorePass: passwordgoeshere
 keystorePass: passwordgoeshere
+
+sts:
+  # Parallel podManagementPolicy for faster bootstrap and teardown. Default is OrderedReady.
+  podManagementPolicy: Parallel
 
 service:
   type: ClusterIP
