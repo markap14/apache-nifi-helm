@@ -18,7 +18,7 @@ spec:
     app: {{ template "apache-nifi.name" . }}-ca
     release: {{ .Release.Name }}
 ---
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "apache-nifi.fullname" . }}-ca
