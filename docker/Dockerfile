@@ -67,5 +67,5 @@ COPY ./files/docker-entrypoint.sh /
 WORKDIR $NIFI_HOME
 
 # Apply configuration and start NiFi
-ENTRYPOINT      ["/docker-entrypoint.sh"]
+ENTRYPOINT      ["/bin/bash"]
 CMD             ["bin/nifi.sh", "run"]
