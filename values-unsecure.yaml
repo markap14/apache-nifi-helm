@@ -1,0 +1,8 @@
+properties:
+  clusterSecure: false
+  httpsPort: null
+  siteToSite:
+    secure: false
+
+ca:
+  enabled: false

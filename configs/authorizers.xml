@@ -1,3 +1,7 @@
+{{- $replicas := int .Values.replicaCount }}
+{{- $chart := .Chart.Name }}
+{{- $release := .Release.Name }}
+{{- $namespace := .Release.Namespace }}
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -43,8 +47,9 @@
         <class>org.apache.nifi.authorization.FileUserGroupProvider</class>
         <property name="Users File">../data/users.xml</property>
         <property name="Legacy Authorized Users File"></property>
-
-        <property name="Initial User Identity 1"></property>
+{{- range $i := until $replicas }}
+        <property name="Initial User Identity {{ $i }}">CN={{ $release }}-{{ $chart }}-{{ $i }}.{{ $release }}-{{ $chart }}-headless.{{ $namespace }}.svc.cluster.local, OU=NIFI</property>
+{{- end }}
     </userGroupProvider>
 
     <!--
@@ -214,8 +219,9 @@
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity"></property>
         <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1"></property>
+{{- range $i := until $replicas }}
+        <property name="Node Identity {{ $i }}">CN={{ $release }}-{{ $chart }}-{{ $i }}.{{ $release }}-{{ $chart }}-headless.{{ $namespace }}.svc.cluster.local, OU=NIFI</property>
+{{- end }}
     </accessPolicyProvider>
 
     <!--
