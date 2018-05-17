@@ -56,7 +56,7 @@ spec:
 
           rm -f ${NIFI_BASE_DIR}/data/cert/*
 
-          ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
+          exec ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
             -t "{{ .Values.ca.token }}"\
 {{- if .Values.properties.webProxyHost}}
@@ -72,7 +72,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command:
-        - sh
+        - bash
         - -ce
         - |
           prop_replace () {
@@ -102,7 +102,7 @@ spec:
           prop_replace nifi.web.http.host ${FQDN}
 {{- end }}
 
-          bin/nifi.sh run
+          exec bin/nifi.sh run
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
@@ -162,7 +162,7 @@ spec:
             subPath: "zookeeper.properties"
       - name: nifi-app-log-sidecar
         image: {{ .Values.sidecar.image }}
-        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-app.log']
+        args: [tail, -n+1, -F, /var/log/nifi-app.log]
         resources:
 {{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:
@@ -170,7 +170,7 @@ spec:
           mountPath: /var/log
       - name: nifi-bootstrap-log-sidecar
         image: {{ .Values.sidecar.image }}
-        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-bootstrap.log']
+        args: [tail, -n+1, -F, /var/log/nifi-bootstrap.log]
         resources:
 {{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:
@@ -178,7 +178,7 @@ spec:
           mountPath: /var/log
       - name: nifi-user-log-sidecar
         image: {{ .Values.sidecar.image }}
-        args: [/bin/sh, -c, 'tail -n+1 -F /var/log/nifi-user.log']
+        args: [tail, -n+1, -F, /var/log/nifi-user.log]
         resources:
 {{ toYaml .Values.logresources | indent 10 }}
         volumeMounts:

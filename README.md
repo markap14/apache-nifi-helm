@@ -80,6 +80,7 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 * Ingress (with public TLS)
 * Liveness/readiness checks (cluster state)
 * Graceful shutdown
+  - need a fork from: anibali/alpine-tini
 * StatefulSet fine tuning
   - poddistruptionbudget
   - default antiaffinity

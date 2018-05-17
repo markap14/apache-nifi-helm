@@ -45,7 +45,7 @@ probe:
 # for tailing nifi-app log, nifi-user log, and nifi-bootstrap log. This makes it more
 # convenient to view the different logs.
 sidecar:
-  image: busybox
+  image: anibali/alpine-tini:3.4
 
 
 ## Persistent Storage

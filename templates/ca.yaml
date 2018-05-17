@@ -47,9 +47,11 @@ spec:
         - sh
         - -c
         - |
-          ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh server -c "{{ template "apache-nifi.fullname" . }}-ca" -t "{{ .Values.ca.token }}" -p {{ .Values.ca.port }}
+          exec ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh server -c "{{ template "apache-nifi.fullname" . }}-ca" -t "{{ .Values.ca.token }}" -p {{ .Values.ca.port }}
         ports:
         - containerPort: {{ .Values.ca.port }}
+      # needed until tls-toolkit.sh runs Java through exec
+      terminationGracePeriodSeconds: 0
 ---
 apiVersion: apps/v1beta2
 kind: Deployment
@@ -92,4 +94,5 @@ spec:
             fi
             sleep 60
           done
+      terminationGracePeriodSeconds: 0
 {{- end -}}
