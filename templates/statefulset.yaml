@@ -81,29 +81,41 @@ spec:
           FQDN=$(hostname -f)
 
           cat "${NIFI_HOME}/conf/nifi.temp" > "${NIFI_HOME}/conf/nifi.properties"
-
-          prop_replace nifi.web.http.host ${FQDN}
-          prop_replace nifi.web.https.host ${FQDN}
+          
           prop_replace nifi.remote.input.host ${FQDN}
           prop_replace nifi.cluster.node.address ${FQDN}
           prop_replace nifi.zookeeper.connect.string ${NIFI_ZOOKEEPER_CONNECT_STRING}
 
 {{- if .Values.ca.enabled }}
+          prop_replace nifi.web.https.host ${FQDN}
+
           prop_replace nifi.security.keystore ${NIFI_BASE_DIR}/data/cert/keystore.jks
           prop_replace nifi.security.keystorePasswd $(jq -r .keyStorePassword ${NIFI_BASE_DIR}/data/cert/config.json)
           prop_replace nifi.security.keyPasswd $(jq -r .keyPassword ${NIFI_BASE_DIR}/data/cert/config.json)
 
           prop_replace nifi.security.truststore ${NIFI_BASE_DIR}/data/cert/truststore.jks
           prop_replace nifi.security.truststorePasswd $(jq -r .trustStorePassword ${NIFI_BASE_DIR}/data/cert/config.json)
+{{- else }}
+          prop_replace nifi.web.http.host ${FQDN}
 {{- end }}
 
           bin/nifi.sh run
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
+{{- if .Values.properties.httpsPort }}
+        - containerPort: {{ .Values.properties.httpsPort }}
+{{- if .Values.sts.hostPort }}
+          hostPort: {{ .Values.sts.hostPort }}
+{{- end }}
+          name: https
+          protocol: TCP
+{{- end }}
+{{- if .Values.properties.httpPort }}
         - containerPort: {{ .Values.properties.httpPort }}
           name: http
           protocol: TCP
+{{- end }}
         - containerPort: {{ .Values.properties.clusterPort }}
           name: cluster
           protocol: TCP

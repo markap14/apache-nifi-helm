@@ -62,8 +62,6 @@ USER nifi
 
 COPY ./files/nifi-env.sh $NIFI_HOME/bin/nifi-env.sh
 
-COPY ./files/docker-entrypoint.sh /
-
 WORKDIR $NIFI_HOME
 
 # Apply configuration and start NiFi
