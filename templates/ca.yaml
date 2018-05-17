@@ -40,7 +40,7 @@ spec:
         release: {{ .Release.Name }}
     spec:
       containers:
-      - name: {{ template "apache-nifi.name" . }}-ca
+      - name: ca
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command:
@@ -50,4 +50,46 @@ spec:
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh server -c "{{ template "apache-nifi.fullname" . }}-ca" -t "{{ .Values.ca.token }}" -p {{ .Values.ca.port }}
         ports:
         - containerPort: {{ .Values.ca.port }}
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "apache-nifi.fullname" . }}-certgen
+  labels:
+    app: {{ template "apache-nifi.name" . }}-certgen
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "apache-nifi.name" . }}-certgen
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "apache-nifi.name" . }}-certgen
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: certgen
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command:
+        - sh
+        - -c
+        - |
+          cd ${NIFI_HOME}
+          while :; do
+            if [ ! -f "keystore.pkcs12" ]; then
+              ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
+                -c "{{ template "apache-nifi.fullname" . }}-ca"\
+                -t "{{ .Values.ca.token }}"\
+                -p {{ .Values.ca.port }}\
+                -D "CN=admin,OU=NIFI"\
+                -T PKCS12
+            fi
+            sleep 60
+          done
 {{- end -}}

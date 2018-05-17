@@ -59,6 +59,9 @@ spec:
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
             -t "{{ .Values.ca.token }}"\
+{{- if .Values.properties.webProxyHost}}
+            --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
+{{- end }}
             -p {{ .Values.ca.port }}
         volumeMounts:
           - name: "data"

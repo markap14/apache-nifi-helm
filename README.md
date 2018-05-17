@@ -76,16 +76,17 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 ## Todo items
 
 * TLS setup for secure node communication
+  - Put generated admin/user certs in secret store
 * Ingress (with public TLS)
-* Explicit command to run containers (NiFi)
 * Liveness/readiness checks (cluster state)
+* Graceful shutdown
 * StatefulSet fine tuning
   - poddistruptionbudget
-  - paralleldist
   - default antiaffinity
 * Set default resource request and limit
 * Log rotation
+* MITM token generation
+* Relevant NOTES.txt
 * Not all sysctl parameters are allowed to be configured currently:
   - vm.swappiness
   - net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait
-
