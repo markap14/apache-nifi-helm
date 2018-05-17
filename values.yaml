@@ -51,11 +51,8 @@ sidecar:
 ## Persistent Storage
 # When creating persistent storage, the NiFi helm chart can either reference an already-defined
 # storage class by name, such as "standard" or can define a custom storage class by specifying
-# the storage class name as "nifi-storage-class" and providing the "storageProvisioner" and "storageType".
-# For example, to use SSD storage on Google Compute Engine, we would use the following settings:
-# storageClass: nifi-storage-class
-# storageProvisioner: kubernetes.io/gce-pd
-# storageType: pd-ssd
+# customStorageClass: true and providing the "storageClass", "storageProvisioner" and "storageType".
+# For example, to use SSD storage on Google Compute Engine see values-gcp.yaml
 #
 # To use a storage class that already exists on the Kubernetes cluster, we can simply reference it by name.
 # For example:
