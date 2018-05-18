@@ -77,14 +77,13 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 
 * TLS setup for secure node communication
   - Put generated admin/user certs in secret store
-* Ingress (with public TLS)
-* Liveness/readiness checks (cluster state)
 * Graceful shutdown
   - need a fork from: anibali/alpine-tini
 * StatefulSet fine tuning
   - poddistruptionbudget
   - default antiaffinity
 * Set default resource request and limit
+* Sticky session in LB
 * Log rotation
 * MITM token generation
 * Relevant NOTES.txt

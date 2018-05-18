@@ -54,21 +54,40 @@ spec:
           mkdir -p ${NIFI_BASE_DIR}/data/cert
           cd ${NIFI_BASE_DIR}/data/cert
 
-          rm -f ${NIFI_BASE_DIR}/data/cert/*
+          rm -rf ${NIFI_BASE_DIR}/data/cert/*
 
-          exec ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
+          ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
             -t "{{ .Values.ca.token }}"\
 {{- if .Values.properties.webProxyHost}}
             --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
 {{- end }}
             -p {{ .Values.ca.port }}
+
+          # generate admin cert for operational use cases
+          mkdir -p ${NIFI_BASE_DIR}/data/cert/admin
+          cd ${NIFI_BASE_DIR}/data/cert/admin
+
+          ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
+            -c "{{ template "apache-nifi.fullname" . }}-ca"\
+            -t "{{ .Values.ca.token }}"\
+{{- if .Values.properties.webProxyHost}}
+            --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
+{{- end }}
+            -p {{ .Values.ca.port }}\
+            -D "CN=admin,OU=NIFI"\
+            -T PKCS12
+
+          export PASS=$(jq -r .keyStorePassword config.json)
+
+          openssl pkcs12 -in "keystore.pkcs12" -out "key.pem" -nocerts -nodes -password "env:PASS"
+          openssl pkcs12 -in "keystore.pkcs12" -out "crt.pem" -clcerts -nokeys -password "env:PASS"
         volumeMounts:
           - name: "data"
             mountPath: /opt/nifi/data
 {{- end }}
       containers:
-      - name: {{ template "apache-nifi.name" . }}-server
+      - name: server
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command:
@@ -125,6 +144,39 @@ spec:
         env:
         - name: NIFI_ZOOKEEPER_CONNECT_STRING
           value: {{ template "zookeeper.url" . }}
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          exec:
+            command:
+            - bash
+            - -c
+            - |
+{{- if .Values.properties.httpsPort }}
+              curl -kv \
+                --cert ${NIFI_BASE_DIR}/data/cert/admin/crt.pem --cert-type PEM \
+                --key ${NIFI_BASE_DIR}/data/cert/admin/key.pem --key-type PEM \
+                https://$(hostname -f):{{ .Values.properties.httpsPort }}/nifi-api/controller/cluster > $NIFI_BASE_DIR/data/cluster.state
+{{- else }}
+              curl -kv \
+                http://$(hostname -f):{{ .Values.properties.httpPort }}/nifi-api/controller/cluster > $NIFI_BASE_DIR/data/cluster.state
+{{- end }}
+              STATUS=$(cat $NIFI_BASE_DIR/data/cluster.state | jq -r ".cluster.nodes[] | select(.address==\"$(hostname -f)\") | .status")
+
+              if [[ ! $STATUS = "CONNECTED" ]]; then
+                echo "Node not found with CONNECTED state. Full cluster state:"
+                jq . cluster.state
+                exit 1
+              fi
+        livenessProbe:
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          tcpSocket:
+{{- if .Values.properties.httpsPort }}
+            port: {{ .Values.properties.httpsPort }}
+{{- else }}
+            port: {{ .Values.properties.httpPort }}
+{{- end }}
         volumeMounts:
           - name: "data"
             mountPath: /opt/nifi/data
@@ -160,7 +212,7 @@ spec:
           - name: "zookeeper-properties"
             mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/zookeeper.properties
             subPath: "zookeeper.properties"
-      - name: nifi-app-log-sidecar
+      - name: app-log
         image: {{ .Values.sidecar.image }}
         args: [tail, -n+1, -F, /var/log/nifi-app.log]
         resources:
@@ -168,7 +220,7 @@ spec:
         volumeMounts:
         - name: logs
           mountPath: /var/log
-      - name: nifi-bootstrap-log-sidecar
+      - name: bootstrap-log
         image: {{ .Values.sidecar.image }}
         args: [tail, -n+1, -F, /var/log/nifi-bootstrap.log]
         resources:
@@ -176,7 +228,7 @@ spec:
         volumeMounts:
         - name: logs
           mountPath: /var/log
-      - name: nifi-user-log-sidecar
+      - name: user-log
         image: {{ .Values.sidecar.image }}
         args: [tail, -n+1, -F, /var/log/nifi-user.log]
         resources:
