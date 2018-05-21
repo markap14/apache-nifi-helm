@@ -41,11 +41,9 @@ probe:
   initialDelaySeconds: 30
   timeoutSeconds: 15
 
-# busybox image is used to tail nifi logs. This allows us to setup a container
-# for tailing nifi-app log, nifi-user log, and nifi-bootstrap log. This makes it more
-# convenient to view the different logs.
+# Separate image for tailing each log separately
 sidecar:
-  image: anibali/alpine-tini:3.4
+  image: pepov/alpine-tini
 
 
 ## Persistent Storage
