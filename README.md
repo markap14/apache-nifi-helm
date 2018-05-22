@@ -77,6 +77,8 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 
 * TLS setup for secure node communication
   - Put generated admin/user certs in secret store
+  - Scaling above initial cluster size results in:
+    X-ProxiedEntitiesDetails: Untrusted proxy CN=nifi-apache-nifi-3.nifi-apache-nifi-headless.default.svc.cluster.local, OU=NIFI
 * Graceful shutdown
   - need a fork from: anibali/alpine-tini
 * StatefulSet fine tuning
