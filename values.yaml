@@ -23,6 +23,7 @@ properties:
   httpsPort: 8443
   clusterPort: 6007
   clusterSecure: true
+  needClientAuth: true
   provenanceStorage: "8 GB"
   siteToSite:
     secure: true
