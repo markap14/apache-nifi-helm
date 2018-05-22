@@ -12,7 +12,7 @@ image:
 
 sts:
   # Parallel podManagementPolicy for faster bootstrap and teardown. Default is OrderedReady.
-  podManagementPolicy: Parallel
+  podManagementPolicy: OrderedReady
 
 service:
   type: ClusterIP
