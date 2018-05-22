@@ -37,6 +37,16 @@ spec:
         runAsUser: 1000
         fsGroup: 1000
       initContainers:
+      - name: zookeeper
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          until nc -vzw 1 nifi-zookeeper 2181; do 
+            echo "waiting for zookeeper..."
+            sleep 2
+          done
 {{- if .Values.ca.enabled }}
       - name: {{ template "apache-nifi.name" . }}-cert
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
