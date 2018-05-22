@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -uo pipefail
+set -u
 
 CURRENT_DIR="$(cd `dirname $0` && pwd)"
 CERT_DIR=$CURRENT_DIR/tmp/cert
@@ -22,6 +22,7 @@ if [[ -z $NIFI_URL ]]; then
     NIFI_URL=https://$(minikube ip)
   else
     echo "Unknown context, unable to determine loadbalancer service"
+    exit 1
   fi
 fi
 echo "Checking certificate"
