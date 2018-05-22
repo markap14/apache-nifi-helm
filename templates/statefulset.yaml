@@ -48,13 +48,14 @@ spec:
             sleep 2
           done
 {{- if .Values.ca.enabled }}
-      - name: {{ template "apache-nifi.name" . }}-cert
+      - name: cert
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command:
         - bash
         - -c
         - |
+
           CA_ADDRESS="{{ template "apache-nifi.fullname" . }}-ca:{{ .Values.ca.port }}"
           until echo "" | openssl s_client -connect "${CA_ADDRESS}"; do
             echo "Waiting for CA to be avaiable at ${CA_ADDRESS}"
@@ -72,6 +73,7 @@ spec:
 {{- if .Values.properties.webProxyHost}}
             --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
 {{- end }}
+            -D "CN=$(hostname -f),OU=NIFI"\
             -p {{ .Values.ca.port }}
 
           # generate admin cert for operational use cases
