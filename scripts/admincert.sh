@@ -21,8 +21,12 @@ if [[ -z $NIFI_URL ]]; then
   if [[ $CURRENT_CONTEXT = "minikube" ]]; then
     NIFI_URL=https://$(minikube ip)
   else
-    echo "Unknown context, unable to determine loadbalancer service"
-    exit 1
+    if [[ -n $PROXY_HOST ]]; then
+      NIFI_URL=https://$PROXY_HOST
+    else
+      echo "Unknown context, unable to determine loadbalancer service"
+      exit 1
+    fi
   fi
 fi
 echo "Checking certificate"
