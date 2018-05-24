@@ -217,7 +217,7 @@
         <identifier>file-access-policy-provider</identifier>
         <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
         <property name="User Group Provider">file-user-group-provider</property>
-        <property name="Authorizations File">./conf/authorizations.xml</property>
+        <property name="Authorizations File">../data/authorizations.xml</property>
         <property name="Initial Admin Identity">CN=admin, OU=NIFI</property>
         <property name="Legacy Authorized Users File"></property>
 {{- range $i := until $replicas }}
