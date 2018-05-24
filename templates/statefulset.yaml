@@ -43,7 +43,7 @@ spec:
         - sh
         - -c
         - |
-          until nc -vzw 1 nifi-zookeeper 2181; do 
+          until nc -vzw 1 {{ .Release.Name }}-zookeeper 2181; do
             echo "waiting for zookeeper..."
             sleep 2
           done
