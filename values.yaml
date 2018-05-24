@@ -6,7 +6,7 @@
 replicaCount: 2
 
 image:
-  repository: markap14/nifi-node
+  repository: pepov/nifi-node
   pullPolicy: Always
   tag: "1.6.0"
 
