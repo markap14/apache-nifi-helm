@@ -156,9 +156,17 @@ spec:
         env:
         - name: NIFI_ZOOKEEPER_CONNECT_STRING
           value: {{ template "zookeeper.url" . }}
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - bash
+              - -c
+              - |
+                $NIFI_HOME/bin/nifi.sh stop
         readinessProbe:
-          initialDelaySeconds: 30
-          periodSeconds: 30
+          initialDelaySeconds: 90
+          periodSeconds: 60
           exec:
             command:
             - bash
@@ -181,8 +189,8 @@ spec:
                 exit 1
               fi
         livenessProbe:
-          initialDelaySeconds: 60
-          periodSeconds: 10
+          initialDelaySeconds: 90
+          periodSeconds: 60
           tcpSocket:
 {{- if .Values.properties.httpsPort }}
             port: {{ .Values.properties.httpsPort }}
