@@ -88,7 +88,6 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 * Sticky session in LB
 * Log rotation
 * MITM token generation
-* Relevant NOTES.txt
 * Not all sysctl parameters are allowed to be configured currently:
   - vm.swappiness
   - net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait

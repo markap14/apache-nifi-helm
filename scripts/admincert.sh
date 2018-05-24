@@ -18,15 +18,11 @@ NIFI_URL=${NIFI_URL:-}
 
 if [[ -z $NIFI_URL ]]; then
   CURRENT_CONTEXT=$(kubectl config current-context)
-  if [[ $CURRENT_CONTEXT = "minikube" ]]; then
-    NIFI_URL=https://$(minikube ip)
+  if [[ -n $PROXY_HOST ]]; then
+    NIFI_URL=https://$PROXY_HOST
   else
-    if [[ -n $PROXY_HOST ]]; then
-      NIFI_URL=https://$PROXY_HOST
-    else
-      echo "Unknown context, unable to determine loadbalancer service"
-      exit 1
-    fi
+    echo "Unknown context, unable to determine loadbalancer service"
+    exit 1
   fi
 fi
 echo "Checking certificate"
@@ -36,7 +32,7 @@ export PASS=$(jq -r .keyStorePassword "$CERT_DIR/config.json" | tee "$CERT_DIR/k
 openssl pkcs12 -in "$CERT_DIR/keystore.pkcs12" -out "$CERT_DIR/key.pem" -nocerts -nodes -password "env:PASS"
 openssl pkcs12 -in "$CERT_DIR/keystore.pkcs12" -out "$CERT_DIR/crt.pem" -clcerts -nokeys -password "env:PASS"
 
-curl -kv "$NIFI_URL" --connect-timeout 1 --max-time 1 --cert scripts/tmp/cert/crt.pem --cert-type PEM --key scripts/tmp/cert/key.pem --key-type PEM 1>"$CERT_DIR/curl.log" 2>&1
+curl -kv "$NIFI_URL" --connect-timeout 1 --max-time 3 --cert scripts/tmp/cert/crt.pem --cert-type PEM --key scripts/tmp/cert/key.pem --key-type PEM 1>"$CERT_DIR/curl.log" 2>&1
 
 CURL_ERROR=$?
 if [[ $CURL_ERROR -gt 0 ]]; then
