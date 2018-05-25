@@ -2,6 +2,18 @@
 
 set -u
 
+if [[ -z ${SELECTED_ENV:-} ]]; then
+    echo "Please select an existing environment to use (or define a custom one under ./env)!"
+    echo -n "Available envs: "
+    ls env/
+    echo "Default: minikube-secure"
+    read -r SELECTED_ENV
+    export SELECTED_ENV=${SELECTED_ENV:-"minikube-secure"}
+else
+    echo "Selected env: $SELECTED_ENV"
+fi
+source env/$SELECTED_ENV
+
 CURRENT_DIR="$(cd `dirname $0` && pwd)"
 CERT_DIR=$CURRENT_DIR/tmp/cert
 
