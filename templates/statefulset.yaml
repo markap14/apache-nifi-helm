@@ -21,13 +21,34 @@ spec:
         release: {{ .Release.Name | quote }}
         heritage: {{ .Release.Service | quote }}
     spec:
+      {{- if eq .Values.sts.AntiAffinity "hard"}}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - {{ include "apache-nifi.name" . | quote }}
+              topologyKey: "kubernetes.io/hostname"
+      {{- else if eq .Values.sts.AntiAffinity "soft"}}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+             - weight: 1
+               podAffinityTerm:
+                 labelSelector:
+                    matchExpressions:
+                      - key: "component"
+                        operator: In
+                        values:
+                         - {{ include "apache-nifi.name" . | quote }}
+                 topologyKey: "kubernetes.io/hostname"
+      {{- end}}
 {{- if .Values.tolerations }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
-{{- end }}
-{{- if .Values.affinity }}
-      affinity:
-{{ toYaml .Values.affinity | indent 8 }}
 {{- end }}
 {{- if .Values.nodeSelector }}
       nodeSelector:
