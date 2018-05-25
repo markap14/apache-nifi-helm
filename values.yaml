@@ -116,3 +116,5 @@ ca:
   token: secret-token-to-prevent-mitm
   service:
     type: ClusterIP
+  admin:
+    cn: admin

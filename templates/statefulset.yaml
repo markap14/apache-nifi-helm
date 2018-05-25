@@ -108,7 +108,7 @@ spec:
             --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
 {{- end }}
             -p {{ .Values.ca.port }}\
-            -D "CN=admin,OU=NIFI"\
+            -D "CN={{ .Values.ca.admin.cn }},OU=NIFI"\
             -T PKCS12
 
           export PASS=$(jq -r .keyStorePassword config.json)

@@ -54,6 +54,7 @@ helm upgrade --install $RELEASE_NAME $CHART_PATH\
  $VALUES_ARGS\
  --namespace $RELEASE_NAMESPACE\
  --set properties.webProxyHost=$PROXY_HOST\
+ --set ca.admin.cn=$ADMIN_CN\
  --kube-context $SELECTED_CONTEXT
 
 echo "

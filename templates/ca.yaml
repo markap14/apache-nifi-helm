@@ -89,7 +89,7 @@ spec:
                 -c "{{ template "apache-nifi.fullname" . }}-ca"\
                 -t "{{ .Values.ca.token }}"\
                 -p {{ .Values.ca.port }}\
-                -D "CN=admin,OU=NIFI"\
+                -D "CN={{ .Values.ca.admin.cn }},OU=NIFI"\
                 -T PKCS12
             fi
             sleep 60
