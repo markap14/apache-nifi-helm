@@ -111,6 +111,10 @@ zookeeper:
   port: 2181
 
 ca:
+  image:
+    repository: pepov/nifi-toolkit
+    tag: 1.7.0-SNAPSHOT
+    pullPolicy: IfNotPresent
   enabled: true
   port: 8443
   token: secret-token-to-prevent-mitm

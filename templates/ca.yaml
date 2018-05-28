@@ -41,8 +41,8 @@ spec:
     spec:
       containers:
       - name: ca
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.ca.image.pullPolicy | quote }}
+        image: "{{ .Values.ca.image.repository }}:{{ .Values.ca.image.tag }}"
         command:
         - sh
         - -c
@@ -76,13 +76,12 @@ spec:
     spec:
       containers:
       - name: certgen
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.ca.image.pullPolicy | quote }}
+        image: "{{ .Values.ca.image.repository }}:{{ .Values.ca.image.tag }}"
         command:
         - sh
         - -c
         - |
-          cd ${NIFI_HOME}
           while :; do
             if [ ! -f "keystore.pkcs12" ]; then
               ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\

@@ -70,8 +70,8 @@ spec:
           done
 {{- if .Values.ca.enabled }}
       - name: cert
-        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.ca.image.pullPolicy | quote }}
+        image: "{{ .Values.ca.image.repository }}:{{ .Values.ca.image.tag }}"
         command:
         - bash
         - -c
@@ -83,10 +83,10 @@ spec:
             sleep 2
           done;
 
-          mkdir -p ${NIFI_BASE_DIR}/data/cert
-          cd ${NIFI_BASE_DIR}/data/cert
+          mkdir -p /data/cert
+          cd /data/cert
 
-          rm -rf ${NIFI_BASE_DIR}/data/cert/*
+          rm -rf /data/cert/*
 
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
@@ -98,8 +98,8 @@ spec:
             -p {{ .Values.ca.port }}
 
           # generate admin cert for operational use cases
-          mkdir -p ${NIFI_BASE_DIR}/data/cert/admin
-          cd ${NIFI_BASE_DIR}/data/cert/admin
+          mkdir -p /data/cert/admin
+          cd /data/cert/admin
 
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
@@ -117,7 +117,7 @@ spec:
           openssl pkcs12 -in "keystore.pkcs12" -out "crt.pem" -clcerts -nokeys -password "env:PASS"
         volumeMounts:
           - name: "data"
-            mountPath: /opt/nifi/data
+            mountPath: /data
 {{- end }}
       containers:
       - name: server
