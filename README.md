@@ -77,17 +77,10 @@ helm upgrade $RELEASE_NAME $CHART_PATH --reuse-values --namespace $RELEASE_NAMES
 
 * TLS setup for secure node communication
   - Put generated admin/user certs in secret store
-  - Scaling above initial cluster size results in:
-    X-ProxiedEntitiesDetails: Untrusted proxy CN=nifi-apache-nifi-3.nifi-apache-nifi-headless.default.svc.cluster.local, OU=NIFI
-* Graceful shutdown
-  - need a fork from: anibali/alpine-tini
 * StatefulSet fine tuning
   - poddistruptionbudget
-  - default antiaffinity
 * Set default resource request and limit
 * Sticky session in LB
-* Log rotation
-* MITM token generation
 * Not all sysctl parameters are allowed to be configured currently:
   - vm.swappiness
   - net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait
