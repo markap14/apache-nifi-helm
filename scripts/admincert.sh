@@ -2,21 +2,13 @@
 
 set -u
 
-if [[ -z ${SELECTED_ENV:-} ]]; then
-    echo "Please select an existing environment to use (or define a custom one under ./env)!"
-    echo -n "Available envs: "
-    ls env/
-    echo "Default: minikube-secure"
-    read -r SELECTED_ENV
-    export SELECTED_ENV=${SELECTED_ENV:-"minikube-secure"}
-else
-    echo "Selected env: $SELECTED_ENV"
-fi
-source env/$SELECTED_ENV
-
 CURRENT_DIR="$(cd `dirname $0` && pwd)"
-CERT_DIR=$CURRENT_DIR/tmp/cert
 
+source $CURRENT_DIR/functions.sh
+
+argcheck $@
+
+CERT_DIR=$CURRENT_DIR/tmp/cert
 mkdir -p $CERT_DIR
 
 POD=$(kubectl get po -l app=apache-nifi-certgen,release=${RELEASE_NAME} -o jsonpath="{.items[0].metadata.name}")
@@ -44,7 +36,7 @@ export PASS=$(jq -r .keyStorePassword "$CERT_DIR/config.json" | tee "$CERT_DIR/k
 openssl pkcs12 -in "$CERT_DIR/keystore.pkcs12" -out "$CERT_DIR/key.pem" -nocerts -nodes -password "env:PASS"
 openssl pkcs12 -in "$CERT_DIR/keystore.pkcs12" -out "$CERT_DIR/crt.pem" -clcerts -nokeys -password "env:PASS"
 
-curl -kv "$NIFI_URL" --connect-timeout 1 --max-time 3 --cert scripts/tmp/cert/crt.pem --cert-type PEM --key scripts/tmp/cert/key.pem --key-type PEM 1>"$CERT_DIR/curl.log" 2>&1
+curl -kv "$NIFI_URL" --connect-timeout 1 --max-time 3 --cert $CURRENT_DIR/tmp/cert/crt.pem --cert-type PEM --key $CURRENT_DIR/tmp/cert/key.pem --key-type PEM 1>"$CERT_DIR/curl.log" 2>&1
 
 CURL_ERROR=$?
 if [[ $CURL_ERROR -gt 0 ]]; then
