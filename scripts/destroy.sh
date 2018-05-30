@@ -8,5 +8,8 @@ source $CURRENT_DIR/functions.sh
 
 argcheck $@
 
-helm delete $RELEASE_NAME --purge
+if [[ $(helm list --namespace $RELEASE_NAMESPACE | grep $RELEASE_NAME) ]]; then
+    helm delete $RELEASE_NAME --purge
+fi
 kubectl delete pvc -l release=$RELEASE_NAME
+kubectl delete secret -l release=$RELEASE_NAME
