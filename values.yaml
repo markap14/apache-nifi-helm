@@ -6,13 +6,13 @@
 replicaCount: 2
 
 image:
-  repository: pepov/nifi-node
-  pullPolicy: Always
+  repository: pepov/nifi
+  pullPolicy: IfNotPresent
   tag: "1.6.0"
 
 sts:
   # Parallel podManagementPolicy for faster bootstrap and teardown. Default is OrderedReady.
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
   AntiAffinity: hard
 
 service:
@@ -113,7 +113,7 @@ zookeeper:
 ca:
   image:
     repository: pepov/nifi-toolkit
-    tag: 1.7.0-SNAPSHOT
+    tag: "1.7.0-SNAPSHOT"
     pullPolicy: IfNotPresent
   enabled: true
   port: 8443

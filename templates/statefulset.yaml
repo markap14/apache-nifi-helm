@@ -234,7 +234,7 @@ spec:
           - name: "provenance-repository"
             mountPath: /opt/nifi/provenance_repository
           - name: "logs"
-            mountPath: /opt/nifi/logs
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/logs
           - name: "bootstrap-conf"
             mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap.conf
             subPath: "bootstrap.conf"
