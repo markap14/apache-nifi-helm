@@ -136,6 +136,12 @@ spec:
           FQDN=$(hostname -f)
 
           cat "${NIFI_HOME}/conf/nifi.temp" > "${NIFI_HOME}/conf/nifi.properties"
+
+          if [[ $(grep $(hostname) conf/authorizers.temp) ]]; then
+            cat "${NIFI_HOME}/conf/authorizers.temp" > "${NIFI_HOME}/conf/authorizers.xml"
+          else
+            cat "${NIFI_HOME}/conf/authorizers.empty" > "${NIFI_HOME}/conf/authorizers.xml"
+          fi
           
           prop_replace nifi.remote.input.host ${FQDN}
           prop_replace nifi.cluster.node.address ${FQDN}
@@ -235,9 +241,12 @@ spec:
           - name: "nifi-properties"
             mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/nifi.temp
             subPath: "nifi.temp"
-          - name: "authorizers-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.xml
-            subPath: "authorizers.xml"
+          - name: "authorizers-temp"
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.temp
+            subPath: "authorizers.temp"
+          - name: "authorizers-empty"
+            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.empty
+            subPath: "authorizers.empty"
           - name: "bootstrap-notification-services-xml"
             mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap-notification-services.xml
             subPath: "bootstrap-notification-services.xml"
@@ -290,12 +299,18 @@ spec:
           items:
             - key: "nifi.properties"
               path: "nifi.temp"
-      - name: "authorizers-xml"
+      - name: "authorizers-temp"
         configMap:
           name: {{ template "apache-nifi.fullname" . }}-config
           items:
             - key: "authorizers.xml"
-              path: "authorizers.xml"
+              path: "authorizers.temp"
+      - name: "authorizers-empty"
+        configMap:
+          name: {{ template "apache-nifi.fullname" . }}-config
+          items:
+            - key: "authorizers-empty.xml"
+              path: "authorizers.empty"
       - name: "bootstrap-notification-services-xml"
         configMap:
           name: {{ template "apache-nifi.fullname" . }}-config
