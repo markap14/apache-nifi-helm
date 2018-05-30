@@ -117,7 +117,6 @@ ca:
     pullPolicy: IfNotPresent
   enabled: true
   port: 8443
-  token: secret-token-to-prevent-mitm
   service:
     type: ClusterIP
   admin:

@@ -90,7 +90,7 @@ spec:
 
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
-            -t "{{ .Values.ca.token }}"\
+            -t "$(cat /etc/ca-mitm-token/token)"\
 {{- if .Values.properties.webProxyHost}}
             --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
 {{- end }}
@@ -103,7 +103,7 @@ spec:
 
           ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
             -c "{{ template "apache-nifi.fullname" . }}-ca"\
-            -t "{{ .Values.ca.token }}"\
+            -t "$(cat /etc/ca-mitm-token/token)"\
 {{- if .Values.properties.webProxyHost}}
             --subjectAlternativeNames {{.Values.properties.webProxyHost}}\
 {{- end }}
@@ -118,6 +118,8 @@ spec:
         volumeMounts:
           - name: "data"
             mountPath: /data
+          - name: ca-mitm-token
+            mountPath: /etc/ca-mitm-token
 {{- end }}
       containers:
       - name: server
@@ -341,6 +343,9 @@ spec:
           items:
             - key: "zookeeper.properties"
               path: "zookeeper.properties"
+      - name: ca-mitm-token
+        secret:
+          secretName: ca-mitm-token
   volumeClaimTemplates:
     - metadata:
         name: "data"
