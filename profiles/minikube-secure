@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [[ ! "Running" = $(minikube status --format "{{.MinikubeStatus}}") ]]; then
-  echo "Is your minikube cluster running?"
-  exit 1
-fi
-
-export CONTEXTS=minikube
-
 export RELEASE_NAME=nifi
 export RELEASE_NAMESPACE=default
 export CHART_PATH=.

@@ -6,3 +6,5 @@ sts:
 loadBalancer:
   enabled:
     false
+
+replicaCount: 1

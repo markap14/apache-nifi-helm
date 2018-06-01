@@ -17,7 +17,7 @@ if [[ ! $(kubectl get po -n kube-system | grep tiller) || ! $(kubectl get sa -n 
 
     echo -n "Waiting for tiller to become available.."
     until [[ $(kubectl get po -n kube-system | grep tiller | grep '1/1') ]]; do
-        sleep 1
+        sleep 2
         echo -n "."
     done
 fi

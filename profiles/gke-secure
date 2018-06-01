@@ -1,9 +1,4 @@
-CONTEXTS=$(kubectl config get-contexts -o name | grep gke)
-
-if [[ -z $CONTEXTS ]]; then
-  echo "There is no GKE context available, you may need to start a cluster first!"
-  exit 1
-fi
+#!/bin/bash
 
 export RELEASE_NAME=nifi
 export RELEASE_NAMESPACE=default
