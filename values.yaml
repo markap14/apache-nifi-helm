@@ -5,6 +5,9 @@
 # Number of nifi nodes
 replicaCount: 2
 
+nifi:
+  version: "1.6.0"
+
 image:
   repository: pepov/nifi
   pullPolicy: IfNotPresent

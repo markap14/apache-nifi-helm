@@ -236,33 +236,33 @@ spec:
           - name: "provenance-repository"
             mountPath: /opt/nifi/provenance_repository
           - name: "logs"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/logs
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/logs
           - name: "bootstrap-conf"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap.conf
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/bootstrap.conf
             subPath: "bootstrap.conf"
           - name: "nifi-properties"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/nifi.temp
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/nifi.temp
             subPath: "nifi.temp"
           - name: "authorizers-temp"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.temp
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/authorizers.temp
             subPath: "authorizers.temp"
           - name: "authorizers-empty"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/authorizers.empty
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/authorizers.empty
             subPath: "authorizers.empty"
           - name: "bootstrap-notification-services-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/bootstrap-notification-services.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/bootstrap-notification-services.xml
             subPath: "bootstrap-notification-services.xml"
           - name: "logback-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/logback.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/logback.xml
             subPath: "logback.xml"
           - name: "login-identity-providers-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/login-identity-providers.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/login-identity-providers.xml
             subPath: "login-identity-providers.xml"
           - name: "state-management-xml"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/state-management.xml
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/state-management.xml
             subPath: "state-management.xml"
           - name: "zookeeper-properties"
-            mountPath: /opt/nifi/nifi-{{ .Values.image.tag }}/conf/zookeeper.properties
+            mountPath: /opt/nifi/nifi-{{ .Values.nifi.version }}/conf/zookeeper.properties
             subPath: "zookeeper.properties"
       - name: app-log
         image: {{ .Values.sidecar.image }}
