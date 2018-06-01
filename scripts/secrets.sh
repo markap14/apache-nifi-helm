@@ -10,7 +10,7 @@ argcheck $@
 
 if [[ ! $(kubectl get secret ca-mitm-token -n $RELEASE_NAMESPACE ) ]]; then
     echo "Creating ca-mitm-token..."
-    cat <<EOF | kubectl replace -n $RELEASE_NAMESPACE -f -
+    cat <<EOF | kubectl replace --force=true -n $RELEASE_NAMESPACE -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
