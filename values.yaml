@@ -124,3 +124,5 @@ ca:
     type: ClusterIP
   admin:
     cn: admin
+
+tokenGeneratorImage: pepov/ca-token-generator

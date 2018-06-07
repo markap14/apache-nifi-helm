@@ -28,9 +28,6 @@ if [[ -z ${PROXY_HOST:-} ]]; then
   export PROXY_HOST=${PROXY_HOST:-nifi}
 fi
 
-echo "Creating secrets..."
-source $CURRENT_DIR/secrets.sh
-
 echo "Running helm..."
 helm upgrade --install $RELEASE_NAME $CHART_PATH\
  $VALUES_FILES\
