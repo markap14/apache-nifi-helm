@@ -11,12 +11,9 @@ argcheck $@
 CERT_DIR=$CURRENT_DIR/tmp/cert
 mkdir -p $CERT_DIR
 
-POD=$(kubectl get po -l app=apache-nifi-certgen,release=${RELEASE_NAME} -o jsonpath="{.items[0].metadata.name}")
-
-echo "Downloading certificate from pod $POD"
-kubectl cp $POD:keystore.pkcs12 $CERT_DIR/
-kubectl cp $POD:config.json $CERT_DIR/
-kubectl cp $POD:nifi-cert.pem $CERT_DIR/
+kubectl_download_secret "${RELEASE_NAME}-apache-nifi-ca-cert-admin" keystore.pkcs12 $CERT_DIR/keystore.pkcs12
+kubectl_download_secret "${RELEASE_NAME}-apache-nifi-ca-cert-admin" config.json $CERT_DIR/config.json
+kubectl_download_secret "${RELEASE_NAME}-apache-nifi-ca-cert-admin" nifi-cert.pem $CERT_DIR/nifi-cert.pem
 
 NIFI_URL=${NIFI_URL:-}
 

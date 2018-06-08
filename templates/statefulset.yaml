@@ -78,7 +78,7 @@ spec:
         - |
 
           CA_ADDRESS="{{ template "apache-nifi.fullname" . }}-ca:{{ .Values.ca.port }}"
-          until echo "" | openssl s_client -connect "${CA_ADDRESS}"; do
+          until echo "" | timeout -t 2 openssl s_client -connect "${CA_ADDRESS}"; do
             echo "Waiting for CA to be avaiable at ${CA_ADDRESS}"
             sleep 2
           done;
@@ -205,7 +205,7 @@ spec:
               curl -kv \
                 --cert ${NIFI_BASE_DIR}/data/cert/admin/crt.pem --cert-type PEM \
                 --key ${NIFI_BASE_DIR}/data/cert/admin/key.pem --key-type PEM \
-                https://$(hostname -f):{{ .Values.properties.httpsPort }}/nifi-api/controller/cluster > $NIFI_BASE_DIR/data/cluster.state
+                https://$(hostname -f):8443/nifi-api/controller/cluster > $NIFI_BASE_DIR/data/cluster.state
 {{- else }}
               curl -kv \
                 http://$(hostname -f):{{ .Values.properties.httpPort }}/nifi-api/controller/cluster > $NIFI_BASE_DIR/data/cluster.state
@@ -345,7 +345,7 @@ spec:
               path: "zookeeper.properties"
       - name: ca-mitm-token
         secret:
-          secretName: ca-mitm-token
+          secretName: {{ template "apache-nifi.fullname" . }}-ca-mitm-token
   volumeClaimTemplates:
     - metadata:
         name: "data"

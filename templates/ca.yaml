@@ -58,54 +58,81 @@ spec:
       volumes:
         - name: ca-mitm-token
           secret:
-            secretName: ca-mitm-token
+            secretName: {{ template "apache-nifi.fullname" . }}-ca-mitm-token
 ---
-apiVersion: apps/v1beta2
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: {{ template "apache-nifi.fullname" . }}-certgen
+  name: {{ template "apache-nifi.fullname" . }}-ca-certgen
   labels:
     app: {{ template "apache-nifi.name" . }}-certgen
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: {{ template "apache-nifi.name" . }}-certgen
-      release: {{ .Release.Name }}
+  backoffLimit: 0
   template:
-    metadata:
-      labels:
-        app: {{ template "apache-nifi.name" . }}-certgen
-        release: {{ .Release.Name }}
     spec:
-      containers:
-      - name: certgen
+      serviceAccountName: {{ template "apache-nifi.fullname" . }}-secret-creator
+      initContainers:
+      - name: ca-check
         imagePullPolicy: {{ .Values.ca.image.pullPolicy | quote }}
         image: "{{ .Values.ca.image.repository }}:{{ .Values.ca.image.tag }}"
+        command:
+        - bash
+        - -c
+        - |
+          CA_ADDRESS="{{ template "apache-nifi.fullname" . }}-ca:{{ .Values.ca.port }}"
+          for i in $(seq 1 10); do
+            echo "Waiting for CA to be avaiable at ${CA_ADDRESS}"
+            if echo "" | timeout -t 2 openssl s_client -connect "${CA_ADDRESS}"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "CA is unavailable, exiting"
+          exit 1
+      containers:
+      - name: ca-cert-generator
+        image: "{{ .Values.ca.certgenImage.repository }}:{{ .Values.ca.certgenImage.tag }}"
+        imagePullPolicy: {{ .Values.ca.certgenImage.pullPolicy | quote }}
         command:
         - sh
         - -c
         - |
-          while :; do
-            if [ ! -f "keystore.pkcs12" ]; then
-              ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
-                -c "{{ template "apache-nifi.fullname" . }}-ca"\
-                -t "$(cat /etc/ca-mitm-token/token)"\
-                -p {{ .Values.ca.port }}\
-                -D "CN={{ .Values.ca.admin.cn }},OU=NIFI"\
-                -T PKCS12
-            fi
-            sleep 60
-          done
+          #!/bin/sh
+
+          mkdir -p /tmp/ca-cert-generator
+          cd /tmp/ca-cert-generator
+
+          TOKEN_FILE=${TOKEN_FILE:-}
+          if [[ -f  "${TOKEN_FILE}" ]]; then
+              TOKEN="$(cat ${TOKEN_FILE})"
+          fi
+
+          ${NIFI_TOOLKIT_HOME}/bin/tls-toolkit.sh client\
+              -c "{{ template "apache-nifi.fullname" . }}-ca"\
+              -p "{{ .Values.ca.port }}"\
+              -t "$(cat /ca-mitm-token/token)"\
+              -D "CN={{ .Values.ca.admin.cn }},OU=NIFI"\
+              -T "PKCS12"
+
+          ${NIFI_TOOLKIT_BASE_DIR}/kubectl create secret generic {{ template "apache-nifi.fullname" . }}-ca-cert-admin --from-file /tmp/ca-cert-generator
+
+          LABELS="
+            metadata:
+              labels:
+                release: {{ .Release.Name }}
+          "
+      
+          ${NIFI_TOOLKIT_BASE_DIR}/kubectl patch secret {{ template "apache-nifi.fullname" . }}-ca-cert-admin -p "$LABELS"
+
         volumeMounts:
           - name: ca-mitm-token
-            mountPath: /etc/ca-mitm-token
-      terminationGracePeriodSeconds: 0
+            mountPath: /ca-mitm-token
+      restartPolicy: Never
       volumes:
         - name: ca-mitm-token
           secret:
-            secretName: ca-mitm-token
+            secretName: {{ template "apache-nifi.fullname" . }}-ca-mitm-token
 {{- end -}}

@@ -118,11 +118,16 @@ ca:
     repository: pepov/nifi-toolkit
     tag: "1.7.0-SNAPSHOT"
     pullPolicy: IfNotPresent
+  certgenImage:
+    repository: pepov/ca-cert-generator
+    tag: latest
+    pullPolicy: IfNotPresent
   enabled: true
   port: 8443
   service:
     type: ClusterIP
   admin:
     cn: admin
+  certgenSchedule: "@daily"
 
 tokenGeneratorImage: pepov/ca-token-generator
