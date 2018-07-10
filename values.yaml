@@ -5,41 +5,39 @@
 # Number of nifi nodes
 replicaCount: 2
 
+nifi:
+  version: "1.6.0"
+
 image:
-  repository: markap14/nifi-node
-  pullPolicy: Always
+  repository: pepov/nifi
+  pullPolicy: IfNotPresent
   tag: "1.6.0"
 
-truststorePass: passwordgoeshere
-keystorePass: passwordgoeshere
+sts:
+  # Parallel podManagementPolicy for faster bootstrap and teardown. Default is OrderedReady.
+  podManagementPolicy: Parallel
+  AntiAffinity: hard
 
 service:
-  type: NodePort
+  type: ClusterIP
 
 properties:
   isNode: true
-  httpPort: 8080
+  httpPort: null
+  httpsPort: 8443
   clusterPort: 6007
+  clusterSecure: true
+  needClientAuth: true
   provenanceStorage: "8 GB"
   siteToSite:
-    secure: false
+    secure: true
     port: 10000
+  authorizer: managed-authorizer
 
 loadBalancer:
   enabled: true
-
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  #hosts:
-  #  - chart-example.local
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  httpPort: 80
+  httpsPort: 443
 
 # Amount of memory to give the NiFi java heap
 jvmMemory: 2g
@@ -48,30 +46,22 @@ probe:
   initialDelaySeconds: 30
   timeoutSeconds: 15
 
-# busybox image is used to tail nifi logs. This allows us to setup a container
-# for tailing nifi-app log, nifi-user log, and nifi-bootstrap log. This makes it more
-# convenient to view the different logs.
+# Separate image for tailing each log separately
 sidecar:
-  image: busybox
+  image: pepov/alpine-tini
 
 
 ## Persistent Storage
 # When creating persistent storage, the NiFi helm chart can either reference an already-defined
 # storage class by name, such as "standard" or can define a custom storage class by specifying
-# the storage class name as "nifi-storage-class" and providing the "storageProvisioner" and "storageType".
-# For example, to use SSD storage on Google Compute Engine, we would use the following settings:
-# storageClass: nifi-storage-class
-# storageProvisioner: kubernetes.io/gce-pd
-# storageType: pd-ssd
+# customStorageClass: true and providing the "storageClass", "storageProvisioner" and "storageType".
+# For example, to use SSD storage on Google Compute Engine see values-gcp.yaml
 #
 # To use a storage class that already exists on the Kubernetes cluster, we can simply reference it by name.
 # For example:
 # storageClass: standard
 #
-# storageClass: standard
-#storageClass: nifi-storage-class
-#storageProvisioner: kubernetes.io/gce-pd
-#storageType: pd-ssd
+storageClass: standard
 
 ## Storage Capacities for persistent volumes
 # Storage capacity for the 'data' directory, which is used to hold things such as the flow.xml.gz, configuration, state, etc.
@@ -97,6 +87,14 @@ resources: {}
   #  cpu: 100m
   #  memory: 128Mi
 
+logresources:
+  requests:
+    cpu: 10m
+    memory: 10Mi
+  limits:
+    cpu: 50m
+    memory: 50Mi
+
 nodeSelector: {}
 
 tolerations: []
@@ -111,29 +109,25 @@ zookeeper:
   ## ref: https://github.com/kubernetes/charts/tree/master/incubator/zookeeper
   enabled: true
 
-  # Number of ZooKeeper replicas
-  servers: 1
-
-  ## Configure Zookeeper resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  resources:
-    limits:
-      memory: "256Mi"
-    requests:
-      memory: "128Mi"
-
-  antiAffinity: "soft"
-
-  ## The JVM heap size to allocate to Zookeeper
-  heap: "128m"
-
-  ## The amount of PV storage allocated to each Zookeeper pod in the statefulset
-  storage: "2Gi"
-
-  ## Specify a Zookeeper imagePullPolicy
-  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-  #imagePullPolicy: "IfNotPresent"
-
   ## If the Zookeeper Chart is disabled a URL and port are required to connect
   url: ""
   port: 2181
+
+ca:
+  image:
+    repository: pepov/nifi-toolkit
+    tag: "1.7.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+  certgenImage:
+    repository: pepov/ca-cert-generator
+    tag: latest
+    pullPolicy: IfNotPresent
+  enabled: true
+  port: 8443
+  service:
+    type: ClusterIP
+  admin:
+    cn: admin
+  certgenSchedule: "@daily"
+
+tokenGeneratorImage: pepov/ca-token-generator

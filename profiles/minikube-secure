@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export RELEASE_NAME=nifi
+export RELEASE_NAMESPACE=default
+export CHART_PATH=.
+export PROXY_HOST=nifi-on-minikube
+export ADMIN_CN=nifi-minikube
+
+export VALUES_FILES="-f values-minikube.yaml -f values-lowdisk.yaml -f values-minzookeeper.yaml"

@@ -1,7 +1,3 @@
-{{- $replicas := int .Values.replicaCount }}
-{{- $chart := .Chart.Name }}
-{{- $release := .Release.Name }}
-{{- $namespace := .Release.Namespace }}
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -47,10 +43,6 @@
         <class>org.apache.nifi.authorization.FileUserGroupProvider</class>
         <property name="Users File">../data/users.xml</property>
         <property name="Legacy Authorized Users File"></property>
-{{- range $i := until $replicas }}
-        <property name="Initial User Identity {{ $i }}">CN={{ $release }}-{{ $chart }}-{{ $i }}.{{ $release }}-{{ $chart }}-headless.{{ $namespace }}.svc.cluster.local, OU=NIFI</property>
-{{- end }}
-        <property name="Initial User Identity admin">CN={{ .Values.ca.admin.cn }}, OU=NIFI</property>
     </userGroupProvider>
 
     <!--
@@ -218,11 +210,6 @@
         <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
         <property name="User Group Provider">file-user-group-provider</property>
         <property name="Authorizations File">../data/authorizations.xml</property>
-        <property name="Initial Admin Identity">CN={{ .Values.ca.admin.cn }}, OU=NIFI</property>
-        <property name="Legacy Authorized Users File"></property>
-{{- range $i := until $replicas }}
-        <property name="Node Identity {{ $i }}">CN={{ $release }}-{{ $chart }}-{{ $i }}.{{ $release }}-{{ $chart }}-headless.{{ $namespace }}.svc.cluster.local, OU=NIFI</property>
-{{- end }}
     </accessPolicyProvider>
 
     <!--

@@ -7,10 +7,17 @@ metadata:
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: {{ .Release.Name | quote }}
         heritage: {{ .Release.Service | quote }}
+    annotations:
+        service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
     ports:
+{{- if .Values.properties.clusterSecure }}
+    - port: {{ .Values.properties.httpsPort }}
+      name: https
+{{- else}}
     - port: {{ .Values.properties.httpPort }}
       name: http
+{{- end }}
     - port: {{ .Values.properties.clusterPort }}
       name: cluster
     clusterIP: None

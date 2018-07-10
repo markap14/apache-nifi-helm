@@ -1,8 +1,8 @@
-{{- if eq .Values.storageClass "nifi-storage-class" -}}
+{{- if .Values.customStorageClass -}}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: nifi-storage-class
+  name: {{ .Values.storageClass }}
 provisioner: {{ .Values.storageProvisioner | quote }}
 parameters:
   type: {{ .Values.storageType | quote }}
